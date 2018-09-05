@@ -111,7 +111,7 @@ namespace Keystore
         {
             if (productsBox.SelectedIndex >= 0)
             {
-                keyForm keyform = new keyForm(Password, ((Product)productsBox.Items[productsBox.SelectedIndex]).Id);
+                keyForm keyform = new keyForm(Password, ((Product)productsBox.Items[productsBox.SelectedIndex]).Id, ((Product)productsBox.Items[productsBox.SelectedIndex]).Name);
                 keyform.ShowDialog();
             }
         }

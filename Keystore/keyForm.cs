@@ -19,6 +19,7 @@ namespace Keystore
         int sel = 0;
 
         string Password = "";
+        string Title = "";
         int Id = 0;
 
         List<Key> keys;
@@ -28,12 +29,13 @@ namespace Keystore
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern Int32 SendMessage(IntPtr hWnd, int msg, int wParam, [MarshalAs(UnmanagedType.LPWStr)]string lParam);
 
-        public keyForm(string password, int id)
+        public keyForm(string password, int id, string title = "")
         {
             InitializeComponent();
 
             this.Password = password;
             this.Id = id;
+            this.Title = title;
         }
 
         private void keyForm_Load(object sender, EventArgs e)
@@ -44,6 +46,8 @@ namespace Keystore
             if (!Database.Test(Password))
                 this.Close();
 
+            if(Title != string.Empty)
+              this.Text = Title + " Keys";
 
             SendMessage(keyBox.Handle, EM_SETCUEBANNER, 0, "Add key");
 
@@ -167,6 +171,37 @@ namespace Keystore
                     keysBox.ValueMember = "Id";
                     keysBox.SelectedIndex = sel;
                 }
+            }
+        }
+
+        private void keysBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Control)
+            {
+                if (e.KeyCode == Keys.C)
+                {
+                    Clipboard.SetText(((Key)keysBox.Items[keysBox.SelectedIndex]).Code);
+                }
+            }
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(keysBox.SelectedIndex >= 0)
+                Clipboard.SetText(((Key)keysBox.Items[keysBox.SelectedIndex]).Code);
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DialogResult dr = MessageBox.Show("Are you sure you wish to delete this key?\r\nThis is irreversible!", "Keystore", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            if (dr == DialogResult.OK)
+            {
+                Database.DeleteKey(((Key)keysBox.Items[keysBox.SelectedIndex]).Id, Password);
+                keys = new List<Key>(Database.GetKeys(Id, Password));
+                keysBox.DataSource = null;
+                keysBox.DataSource = keys;
+                keysBox.DisplayMember = "Code";
+                keysBox.ValueMember = "Id";
             }
         }
     }
